@@ -56,6 +56,14 @@ app.get("/user/:id", function (req, res) {
 
 app.use(express.json());
 
+
+const crypto = require("crypto");
+function hash(data) {
+    const hash = crypto.createHash("sha256");
+    hash.update(data);
+    return hash.digest("hex");
+}
+
 app.post("/user", function (req, res) {
     if (!req.body.username) {
         res.status(400).send ("username required!");
@@ -69,11 +77,11 @@ for (let key in req.body) {
     }
 }
 
-let sql = `INSERT INTO inlamning (username, password, name, email)
+let sql = `INSERT INTO inlamning (username, email, name, password)
 VALUES ('${req.body.username}', 
-'${req.body.password}',
+'${req.body.email}',
 '${req.body.name}',
-'${req.body.email}');
+'${hash(req.body.password)}');
 SELECT LAST_INSERT_ID();`; 
 console.log(sql);
 
@@ -83,9 +91,9 @@ con.query(sql, function (err, result, fields) {
     let output = {
       id: result[0].insertId,
       username: req.body.username,
-      password: req.body.password,
       name: req.body.name,
-      email: req.body.email,
+      email: req.body.email, 
+      /*   password: req.body.password, */
     };
     res.send(output);
   });
