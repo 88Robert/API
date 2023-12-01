@@ -18,7 +18,7 @@ con = mysql.createConnection( {
 
 const COLUMNS = ["id", "name", "username", "password", "email"];
 
-app.get("/user", function (req, res) {
+app.get("/users", function (req, res) {
     let sql = "SELECT * FROM inlamning";
     let condition = createCondition(req.query);
     console.log(sql + condition);
@@ -42,7 +42,7 @@ let createCondition = function (query) {
     }
 };
 
-app.get("/user/:id", function (req, res) {
+app.get("/users/:id", function (req, res) {
     let sql = "SELECT * FROM inlamning WHERE id=" + req.params.id;
     console.log(sql);
     con.query(sql, function (err, result, fields) {
@@ -64,7 +64,7 @@ function hash(data) {
     return hash.digest("hex");
 }
 
-app.post("/user", function (req, res) {
+app.post("/users", function (req, res) {
     if (!req.body.username) {
         res.status(400).send ("username required!");
         return;
@@ -76,6 +76,7 @@ for (let key in req.body) {
         return;
     }
 }
+
 
 let sql = `INSERT INTO inlamning (username, email, name, password)
 VALUES ('${req.body.username}', 
@@ -99,5 +100,21 @@ con.query(sql, function (err, result, fields) {
   });
 });
 
+app.put("/users/:id", function (req, res) {
+    if (!(req.body && req.body.name && req.body.email && req.body.password)) {
+        res.sendStatus(400);
+        return;
+    }
+    let sql = `UPDATE inlamning
+            SET name = '${req.body.name}', email = '${req.body.email}', password = '${hash(req.body.password)}'
+            WHERE id = ${req.params.id}`;
 
+    con.query(sql, function (err, result, fields) {
+        if (err) {
+            throw err;
+        } else {
+            res.sendStatus(200);
+        }
+    });
+});
 
