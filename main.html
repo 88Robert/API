@@ -6,6 +6,16 @@
     <title>Document</title>
 </head>
 <body>
-    Min API
+   <h1>Min API</h1>
+   <h2>Routes</h2>
+
+   <ul>
+    <li>GET <em>/users</em> - hämtar alla andvändare.</li>
+    <li>GET <em>/users:ID</em> - hämtar specifik användare</li>
+    <li>POST<em>/users</em> - skapar en ny användare med hashat lösenord, accepterar JSON objekt på formatet {"name": "", "username": "", "password": "", "email": ""}. <code>userId</code> är obligatoriskt.</li>
+    <li>POST<em>/login</em> - inloggning, accepterar JSON-objekt på formatet {"username": "", "password": ""}.</li>
+  </p>
+
+
 </body>
 </html>
