@@ -63,6 +63,24 @@ let createCondition = function (query) {
 };
 
 app.get("/users/:id", function (req, res) {
+    let authHeader = req.headers["authorization"];
+    if (authHeader === undefined) {
+        res.sendStatus(400);
+        return;
+    }
+    let token = authHeader.slice(7);
+    console.log(token);
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "HemligtokensomintekanavkodasXy6333%/&");
+    } catch (err) {
+        console.log(err);
+        res.status(401).send("Wrong token try again!");
+        return;
+    }
+    console.log(decoded);
+    console.log(`Hejsan ${decoded.name}! Vi har skickat ett uppdaterat användaravtal till din mail ${decoded.email}.`);
     let sql = "SELECT * FROM inlamning WHERE id=" + req.params.id;
     console.log(sql);
     con.query(sql, function (err, result, fields) {
@@ -75,7 +93,6 @@ app.get("/users/:id", function (req, res) {
 });
 
 app.use(express.json());
-
 
 const crypto = require("crypto");
 function hash(data) {
@@ -97,7 +114,6 @@ for (let key in req.body) {
     }
 }
 
-
 let sql = `INSERT INTO inlamning (username, email, name, password)
 VALUES ('${req.body.username}', 
 '${req.body.email}',
@@ -114,7 +130,6 @@ con.query(sql, function (err, result, fields) {
       username: req.body.username,
       name: req.body.name,
       email: req.body.email, 
-      /*   password: req.body.password, */
     };
     res.send(output);
   });
@@ -130,7 +145,7 @@ app.post("/login", function (req, res) {
     con.query(sql, function (err, result, fields) {
       if (err) throw err;
       if (result.length == 0) {
-        res.sendStatus(401);
+        res.status(400).send("Felaktigt användarnamn eller lösenord");
         return;
       }
       let passwordHash = hash(req.body.password);
@@ -145,7 +160,7 @@ app.post("/login", function (req, res) {
         let token = jwt.sign(payload, "HemligtokensomintekanavkodasXy6333%/&");
         res.json(token);
       } else {
-        res.sendStatus(401);
+        res.status(401).send("Felaktigt användarnamn eller lösenord");
       }
     });
   });  
@@ -167,56 +182,3 @@ app.put("/users/:id", function (req, res) {
         }
     });
 });
-
-
-/* ;
-app.post("/login", function (req, res) {
-    if (!(req.body && req.body.username && req.body.password)) {
-        res.sendStatus(400);
-        return;
-    }
-    let sql = `SELECT * FROM inlamning WHERE username='${req.body.username}'`;
-
-    con.query(sql, function (err, result, fields) {
-        if (err) throw err;
-        let passwordHash = hash(req.body.password);
-        if (result[0].password = passwordHash) {
-
-            let payload = {
-                sub: result[0].username,
-                name: result[0].name,
-                email: result[0].email,
-            };
-            let token = jwt.sign(payload, "HemligtokensomintekanavkodasXy6333%/&");
-            res.json(token);
-        } else {
-            res.sendStatus(401);
-        }
-    });
-}); */
- 
-/* app.get("/users", function (req, res) {
-    let authHeader = req.headers["authorization"];
-    if (authHeader === undefined) {
-        res.sendStatus(400 + "Bad request");
-        return;
-    }
-    let token = authHeader.slice(7);
-    console.log(token);
-
-    let decoded;
-    try {
-        decoded = jwt.verify(token, "HemligtokensomintekanavkodasXy6333%/&");
-    } catch (err) {
-        console.log(err);
-        res.status(401).send ("Invalid auth token");
-    }
-
-    console.log(decoded);
-    console.log(`Hejsan ${decoded.name}! Vi har skickat ett uppdaterat användaravtal till din mail ${decoded.email}.`);
-    let sql = "SELECT * FROM inlamning";
-    console.log(sql);
-    con.query(sql, function (err, result, fields) {
-        res.send(result);
-    });
-});  */
