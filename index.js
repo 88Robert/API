@@ -1,5 +1,6 @@
 let express = require("express");
 let app = express();
+let jwt = require("jsonwebtoken");
 app.listen(3000);
 console.log("Servern körs på port 3000");
 
@@ -20,6 +21,24 @@ con = mysql.createConnection( {
 const COLUMNS = ["id", "name", "username", "password", "email"];
 
 app.get("/users", function (req, res) {
+    let authHeader = req.headers["authorization"];
+    if (authHeader === undefined) {
+        res.sendStatus(400);
+        return;
+    }
+    let token = authHeader.slice(7);
+    console.log(token);
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "HemligtokensomintekanavkodasXy6333%/&");
+    } catch (err) {
+        console.log(err);
+        res.status(401).send("Wrong token try again!");
+        return;
+    }
+    console.log(decoded);
+    console.log(`Hejsan ${decoded.name}! Vi har skickat ett uppdaterat användaravtal till din mail ${decoded.email}.`);
     let sql = "SELECT * FROM inlamning";
     let condition = createCondition(req.query);
     console.log(sql + condition);
@@ -102,7 +121,10 @@ con.query(sql, function (err, result, fields) {
 });
 
 app.post("/login", function (req, res) {
-    //kod här för att hantera anrop…
+    if((!req.body && req.body.username && req.body.password)) {
+        res.sendStatus(400);
+        return;
+    }
     let sql = `SELECT * FROM inlamning WHERE username='${req.body.username}'`;
   
     con.query(sql, function (err, result, fields) {
@@ -115,11 +137,13 @@ app.post("/login", function (req, res) {
       console.log(passwordHash);
       console.log(result[0].password);
       if (result[0].password == passwordHash) {
-        res.send({
+        let payload = {
           name: result[0].name,
-          username: result[0].username,
+          sub: result[0].username,
           email: result[0].email,
-        });
+        };
+        let token = jwt.sign(payload, "HemligtokensomintekanavkodasXy6333%/&");
+        res.json(token);
       } else {
         res.sendStatus(401);
       }
@@ -139,13 +163,13 @@ app.put("/users/:id", function (req, res) {
         if (err) {
             throw err;
         } else {
-            res.sendStatus(200);
+            res.status(200).send("Ändring lyckades!");
         }
     });
 });
 
 
-/* const jwt = require("jsonwebtoken");
+/* ;
 app.post("/login", function (req, res) {
     if (!(req.body && req.body.username && req.body.password)) {
         res.sendStatus(400);
@@ -169,9 +193,9 @@ app.post("/login", function (req, res) {
             res.sendStatus(401);
         }
     });
-}); 
+}); */
  
-app.get("/users", function (req, res) {
+/* app.get("/users", function (req, res) {
     let authHeader = req.headers["authorization"];
     if (authHeader === undefined) {
         res.sendStatus(400 + "Bad request");
