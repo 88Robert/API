@@ -20,6 +20,8 @@ con = mysql.createConnection( {
 
 const COLUMNS = ["id", "name", "username", "password", "email"];
 
+
+//Hämtar befinlig användarinformation, behövs logga in med token för att se. 
 app.get("/users", function (req, res) {
     let authHeader = req.headers["authorization"];
     if (authHeader === undefined) {
@@ -62,6 +64,7 @@ let createCondition = function (query) {
     }
 };
 
+//Välja specifik användare, när man har loggat in med token. 
 app.get("/users/:id", function (req, res) {
     let authHeader = req.headers["authorization"];
     if (authHeader === undefined) {
@@ -101,6 +104,7 @@ function hash(data) {
     return hash.digest("hex");
 }
 
+//Lägga till ny användare i databasen, med hasning. 
 app.post("/users", function (req, res) {
     if (!req.body.username) {
         res.status(400).send ("username required!");
@@ -135,6 +139,7 @@ con.query(sql, function (err, result, fields) {
   });
 });
 
+//Hämtar data från databas för att logga in, skapar även en token för att kunna se users och users:id.
 app.post("/login", function (req, res) {
     if((!req.body && req.body.username && req.body.password)) {
         res.sendStatus(400);
@@ -165,6 +170,8 @@ app.post("/login", function (req, res) {
     });
   });  
 
+
+//Ändrar befintlig data, denna satt jag längst ner då detta ska få med hashning.    
 app.put("/users/:id", function (req, res) {
     if (!(req.body && req.body.name && req.body.email && req.body.password)) {
         res.sendStatus(400);
@@ -182,3 +189,5 @@ app.put("/users/:id", function (req, res) {
         }
     });
 });
+
+/* Jag har använt samma variabelnamn som dina exempel, men koden har jag försökt att klura med själv.  */
